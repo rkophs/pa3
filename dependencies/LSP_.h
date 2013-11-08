@@ -1,10 +1,4 @@
-//
-//  dynList_.h
-//  PA3
-//
-//  Created by Ryan Kophs on 11/6/13.
-//  Copyright (c) 2013 edu.kophs. All rights reserved.
-//
+
 #include "node_.h"
 
 #define INTMAX 9999999

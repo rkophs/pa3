@@ -1,9 +1,4 @@
-/* 
- * File:   testNode_.c
- * Author: ryan
- *
- * Created on November 7, 2013, 2:42 PM
- */
+
 #include "../dependencies/shared_.h"
 
 int main(int argc, char** argv) {

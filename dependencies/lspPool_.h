@@ -1,10 +1,4 @@
-//
-//  dynList_.h
-//  PA3
-//
-//  Created by Ryan Kophs on 11/6/13.
-//  Copyright (c) 2013 edu.kophs. All rights reserved.
-//
+
 #include "LSP_.h"
 
 struct lspPool {
@@ -30,6 +24,7 @@ int shallowAppendLSP(struct lspPool *pool, struct LSP *shallowCpy) {
     
     if(pool->lsps == NULL){
         pool->lsps = shallowCpy;
+        return 0;
     }
 
     struct LSP *it = pool->lsps;
@@ -125,11 +120,25 @@ void releaseAllLSPs(struct LSP *lsp){
     lsp = NULL;
 }
 
-releaseLSPPool(struct lspPool *target){
+void releaseLSPPool(struct lspPool *target){
     if(target == NULL){
         return;
     }
     releaseAllLSPs(target->lsps);
     free(target);
     target = NULL;
+}
+
+int lspPoolCtrl(struct lspPool *target, struct LSP *lsp){
+    if(target == NULL || lsp == NULL){
+        return -1; //Invalid entries
+    }
+    if(shallowAppendLSP(target, lsp) < 0 ){ //lsp seqName already exists
+        if(CmpSwapSingleLSP(target, lsp) < 0){ //lsp exists w/ lower seq already
+            releaseLSP(lsp); //Release this LSP because it is garbage
+            return -1; //already in pool at a lower number
+        }
+        return 2; //Updated LSP with lower Seq#;
+    }
+    return 1; //New LSP of unknown router name is added
 }
