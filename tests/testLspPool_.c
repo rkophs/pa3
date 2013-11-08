@@ -1,17 +1,6 @@
-/* 
- * File:   testLspPool_.c
- * Author: ryan
- *
- * Created on November 7, 2013, 9:14 PM
- */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "../dependencies/shared_.h"
 
-/*
- * 
- */
 int main(int argc, char** argv) {
     int buffSize = 2048;
     char buff[buffSize];
