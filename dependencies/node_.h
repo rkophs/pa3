@@ -1,10 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "shared_.h"
 
-#define COSTMAX 9999999
-#define COSTMEM 8
+#define MAXNODE 60
 
 struct Node {
     char name[32];
@@ -68,10 +66,9 @@ int deleteNode(struct Node *list, char *name) {
             curr = NULL;
             prev->next = tmp;
             return 0;
-        } else {
-            curr = curr->next;
-            prev = prev->next;
         }
+        curr = curr->next;
+        prev = prev->next;
     }
     return -1;
 }
@@ -99,34 +96,4 @@ void deleteList(struct Node *target) {
     emptyList(target);
     free(target);
     target = NULL;
-}
-
-int printAllNodes(struct Node *target, char *buff, int size){
-    if(target == NULL || target->cost != -2){ //Must be valid list header
-        return -1;
-    }
-    
-    bzero(buff, size);
-    struct Node *it;
-    it = target->next;
-    
-    int i = 0;
-    while(it != NULL){
-        if((i + strlen(it->name) + (COSTMEM - 1) + 3) >= size){
-            return -1; //Not enough buffer to continue
-        }
-        strcat(buff, "<");
-        strncat(buff, it->name, strlen(it->name));
-        strcat(buff, ",");
-        
-        char costStr[COSTMEM];
-        memset(costStr,' ', COSTMEM);
-        insertNum(costStr, COSTMAX, it->cost, COSTMEM - 2);
-        strncat(buff, costStr, COSTMEM - 1);
-        strcat(buff, ">");
-        it = it->next;
-    }
-    
-    buff[size - 1] = 0; //security
-    return 0;
 }
