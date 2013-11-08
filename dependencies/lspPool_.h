@@ -88,6 +88,7 @@ int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
         releaseLSP(lsp);
         pool->lsps = swap;
         swap->next = tmp;
+        return 0;
     }
     
     struct LSP* curr = lsp->next;
