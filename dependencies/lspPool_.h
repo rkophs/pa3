@@ -5,56 +5,33 @@
 //  Created by Ryan Kophs on 11/6/13.
 //  Copyright (c) 2013 edu.kophs. All rights reserved.
 //
-#include "node_.h"
+#include "LSP_.h"
 
-#define INTMAX 9999999
-#define INTMEM 8
-
-struct LSP {
-    char sourceName[32];
-    int seqNum;
-    int timeToLive;
-    struct Node *neighbors;
-    int neighborCount;
-    struct LSP *next;
+struct lspPool {
+    struct LSP *lsps;
 };
 
-struct LSP *createLSP(char *name, int nameLength, int timeToLive) {
-    struct LSP *tmp;
+struct lspPool *createLSPPool(){
+    struct lspPool *tmp;
 
     //Memory allocation:
-    if ((tmp = (struct LSP *) malloc(sizeof (struct LSP))) == NULL) {
+    if ((tmp = (struct lspPool *) malloc(sizeof (struct lspPool))) == NULL) {
         return NULL; //Not enough memory
     }
-
-    //Setting initiative #s:
-    if (nameLength < sizeof (tmp->sourceName)) { //Prevent buffer overflows
-        strncpy(tmp->sourceName, name, nameLength);
-    } else {
-        free(tmp);
-        return NULL;
-    }
-
-    if ((tmp->neighbors = initList()) == NULL) {
-        free(tmp); //Not enough memory
-        return NULL;
-    }
-
-    tmp->seqNum = 0;
-    tmp->timeToLive = timeToLive;
-    tmp->neighborCount = 0;
-    tmp->next = NULL;
-
+    
     return tmp;
 }
 
-int shallowAppendLSP(struct LSP *lsp, struct LSP *shallowCpy) {
-    if (lsp == NULL || shallowCpy == NULL) {
+int shallowAppendLSP(struct lspPool *pool, struct LSP *shallowCpy) {
+    if (pool == NULL || shallowCpy == NULL) {
         return -1; //not valid
     }
+    
+    if(pool->lsps == NULL){
+        pool->lsps = shallowCpy;
+    }
 
-    struct LSP *it;
-    it = lsp;
+    struct LSP *it = pool->lsps;
     while (it->next != NULL) {
         if (!strcmp(it->sourceName, shallowCpy->sourceName)) {
             //already exists in the list of LSPs
@@ -69,37 +46,26 @@ int shallowAppendLSP(struct LSP *lsp, struct LSP *shallowCpy) {
     return 0;
 }
 
-void removeLSP(struct LSP *target) {
-    if (target == NULL) {
-        return;
-    }
-    if (target->neighbors != NULL) {
-        deleteList(target->neighbors);
-    }
-
-    free(target);
-    target = NULL;
-}
-
-int delSingleLSP(struct LSP *lsp, char *name){
-    if(lsp == NULL){
-        return 1;
+int delSingleLSP(struct lspPool *pool, char *name){
+    if(pool == NULL){
+        return -1;
     }
     
-    if(!strcmp(lsp->sourceName, name)){ //First node remove
-        struct LSP *tmp = lsp->next;
-        removeLSP(lsp);
-        lsp = tmp;
-        return;
+    
+    if(!strcmp(pool->lsps->sourceName, name)){ //First node remove
+        struct LSP *tmp = pool->lsps;
+        pool->lsps = pool->lsps->next;
+        releaseLSP(tmp);
+        return 0;
     }
     
-    struct LSP *curr = lsp->next;
-    struct LSP *prev = lsp;
+    struct LSP *curr = pool->lsps->next;
+    struct LSP *prev = pool->lsps;
     
     while(curr != NULL){
         if(!strcmp(curr->sourceName, name)){
             struct LSP *tmp = curr->next;
-            removeLSP(curr);
+            releaseLSP(curr);
             prev->next = tmp;
             return 0;
         }
@@ -109,10 +75,12 @@ int delSingleLSP(struct LSP *lsp, char *name){
     return -1;
 }
 
-int CmpSwapSingleLSP(struct LSP *lsp, struct LSP *swap){
-    if(lsp == NULL || swap == NULL){
+int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
+    if(pool == NULL || swap == NULL){
         return -1; //invalid
     }
+    
+    struct LSP *lsp = pool->lsps;
     if((!strcmp(lsp->sourceName, swap->sourceName)) && swap->seqNum < lsp->seqNum){
         //Match: The sourceNames match, indicating same packet, and the swap seq # is lower
         free(lsp);
@@ -125,7 +93,7 @@ int CmpSwapSingleLSP(struct LSP *lsp, struct LSP *swap){
         if((!strcmp(curr->sourceName, swap->sourceName)) && swap->seqNum < curr->seqNum){
             //Match: The sourceNames match, indicating same packet, and the swap seq # is lower
             struct LSP* tmp = curr->next;
-            removeLSP(curr);
+            releaseLSP(curr);
             prev->next = swap;
             swap->next = tmp;
             return 0;
@@ -134,38 +102,7 @@ int CmpSwapSingleLSP(struct LSP *lsp, struct LSP *swap){
     return -1;
 }
 
-int addNeighbor(struct LSP *target, int cost, char *name, int nameLength) {
-    if (target == NULL) {
-        return -1;
-    }
-
-    int status;
-    if ((status = appendNode(target->neighbors, cost, name, nameLength)) < 0) {
-        return -1;
-    }
-    target->neighborCount++;
-    return 0;
-}
-
-int delNeighbor(struct LSP *target, char *name) {
-    if (target == NULL) {
-        return -1;
-    }
-
-    int status;
-    if ((status = deleteNode(target->neighbors, name)) < 0) {
-        return -1;
-    }
-    target->neighborCount--;
-    return 0;
-}
-
-void emptyNeighbors(struct LSP *target) {
-    emptyList(target->neighbors);
-    target->neighborCount = 0;
-}
-
-void removeAllLSPs(struct LSP *lsp){
+void releaseAllLSPs(struct LSP *lsp){
     if(lsp == NULL){
         return;
     }
@@ -175,17 +112,18 @@ void removeAllLSPs(struct LSP *lsp){
     
     while (it != NULL) {
         tmp = it->next;
-        removeLSP(it);
+        releaseLSP(it);
         it = tmp;
     }
     
     lsp = NULL;
 }
 
-int cmpLSPs(struct LSP *a, struct LSP *b) {
-    return a->seqNum - b->seqNum; //0 for equal, + for A > B, - for A < B
-}
-
-void incSeqNum(struct LSP *a) {
-    a->seqNum++;
+releaseLSPPool(struct lspPool *target){
+    if(target == NULL){
+        return;
+    }
+    releaseAllLSPs(target->lsps);
+    free(target);
+    target = NULL;
 }

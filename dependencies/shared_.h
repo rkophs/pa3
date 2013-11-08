@@ -82,7 +82,6 @@ int BuffAllNodes(struct Node *target, char *buff, int size){
 }
 
 int BuffLSP(struct LSP *lsp, char *buff, int size) {
-
     if (lsp == NULL) { //Must be valid LSP
         return -1;
     }
@@ -92,28 +91,28 @@ int BuffLSP(struct LSP *lsp, char *buff, int size) {
     }
 
     bzero(buff, size);
-    
     char nodes[nStrS];
     bzero(nodes, nStrS);
     if(lsp->neighborCount > 0){
         BuffAllNodes(lsp->neighbors, nodes, nStrS);
     }
     BUFF(buff, size, "[%s , %i , %i , %i , {%s}]", lsp->sourceName, lsp->seqNum, lsp->timeToLive, lsp->neighborCount, nodes);
-
     buff[size - 1] = 0;
     return 0;
 }
 
-int BuffAllLSPs(struct LSP *target, char *buff, int size){
+int BuffAllLSPs(struct lspPool *pool, char *buff, int size){
+    struct LSP *target = pool->lsps;
     bzero(buff, size);
     
     struct LSP *it = target;
     strcat(buff, "{");
     while(it != NULL){
-        char tmp[it->neighborCount*MAXNODE + 100];
-        bzero(tmp, it->neighborCount*MAXNODE + 100);
-        BuffLSP(it, tmp, it->neighborCount*MAXNODE + 100);
+        char tmp[it->neighborCount*MAXNODE + 101];
+        bzero(tmp, it->neighborCount*MAXNODE + 101);
+        BuffLSP(it, tmp, it->neighborCount*MAXNODE + 101);
         strcat(buff, tmp);
+        it = it->next;
     }
     strcat(buff, "}");
     return 0;
