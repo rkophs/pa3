@@ -29,6 +29,7 @@ struct LSP *createLSP(char *name, int nameLength, int timeToLive, int seqNum) {
 
     //Setting initiative #s:
     if (nameLength < sizeof (tmp->sourceName)) { //Prevent buffer overflows
+        bzero(tmp->sourceName, sizeof(tmp->sourceName));
         strncpy(tmp->sourceName, name, nameLength);
     } else {
         free(tmp);

@@ -22,6 +22,7 @@ struct lspPool *createLSPPool(){
     return tmp;
 }
 
+//Returns 0 of shallow append is in fact performed;
 int shallowAppendLSP(struct lspPool *pool, struct LSP *shallowCpy) {
     if (pool == NULL || shallowCpy == NULL) {
         return -1; //not valid
@@ -83,8 +84,10 @@ int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
     struct LSP *lsp = pool->lsps;
     if((!strcmp(lsp->sourceName, swap->sourceName)) && swap->seqNum < lsp->seqNum){
         //Match: The sourceNames match, indicating same packet, and the swap seq # is lower
-        free(lsp);
-        lsp = swap;    
+        struct LSP* tmp = lsp->next;
+        releaseLSP(lsp);
+        pool->lsps = swap;
+        swap->next = tmp;
     }
     
     struct LSP* curr = lsp->next;
@@ -98,6 +101,8 @@ int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
             swap->next = tmp;
             return 0;
         }
+        curr = curr->next;
+        prev = prev->next;
     }
     return -1;
 }
