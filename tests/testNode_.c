@@ -83,7 +83,17 @@ int main(int argc, char** argv) {
     printAllNodes(n1, buff, 100);
     printf("%s\n",buff);
     
+    deleteNode(n1, "KOPHSS");
+    bzero(buff, 100);
+    printAllNodes(n1, buff, 100);
+    printf("%s\n",buff);
+    
     deleteNode(n1, "KOPHS");
+    bzero(buff, 100);
+    printAllNodes(n1, buff, 100);
+    printf("%s\n",buff);
+    
+    deleteNode(n1, "ABCD");
     bzero(buff, 100);
     printAllNodes(n1, buff, 100);
     printf("%s\n",buff);
@@ -158,6 +168,7 @@ int main(int argc, char** argv) {
     printAllNodes(n1, buff, 100);
     printf("%s\n",buff);
     
+    deleteList(n1);
+    
     return 0;
 }
-

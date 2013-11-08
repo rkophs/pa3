@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "shared_.h"
 
 #define COSTMAX 9999999
 #define COSTMEM 8
@@ -42,6 +43,7 @@ int appendNode(struct Node *list, int cost, char *name, int nameLength) {
     linker = list;
     while (it != NULL) { //Iterate to end position
         if(!strcmp(it->name, name)){
+            free(tmp);
             return -1; //already exists;
         }
         linker = it;
@@ -78,14 +80,14 @@ void emptyList(struct Node *target){
     if(target == NULL || target->cost != -2){ //Not a header
         return;
     }
-    struct Node *it1;
+    struct Node *it;
     struct Node *tmp;
     
-    it1 = target->next;
-    while (it1->next != NULL) {
-        tmp = it1->next;
-        free(it1);
-        it1 = tmp;
+    it = target->next;
+    while (it != NULL) {
+        tmp = it->next;
+        free(it);
+        it = tmp;
     }
     target->next = NULL;
 }
@@ -97,26 +99,6 @@ void deleteList(struct Node *target) {
     emptyList(target);
     free(target);
     target = NULL;
-}
-
-//Insert a number into a header buffer in appropriate way:
-void insertNum(char * buffer, int num, int leastSignificantPos){
-    if(num == 0){
-        buffer[leastSignificantPos] = '0';
-        return;
-    }
-    if(num < 0 || num > COSTMAX){
-        buffer[leastSignificantPos] = '1';
-        buffer[leastSignificantPos - 1] = '-';
-        return;
-    }
-    int tmp = num;
-    int i = leastSignificantPos;
-    while(tmp){
-        buffer[i] = tmp % 10 + 48;
-        tmp /= 10;
-        i--;
-    }
 }
 
 int printAllNodes(struct Node *target, char *buff, int size){
@@ -139,7 +121,7 @@ int printAllNodes(struct Node *target, char *buff, int size){
         
         char costStr[COSTMEM];
         memset(costStr,' ', COSTMEM);
-        insertNum(costStr, it->cost, COSTMEM - 2);
+        insertNum(costStr, COSTMAX, it->cost, COSTMEM - 2);
         strncat(buff, costStr, COSTMEM - 1);
         strcat(buff, ">");
         it = it->next;
