@@ -2,6 +2,7 @@
 #include <stdarg.h>
 
 #include "lspPool_.h"
+#include "routePool_.h"
 
 void insertNum(char * buffer, int buffSize, int num, int leastSignificantPos){
     if(num == 0){
@@ -73,7 +74,7 @@ int BuffAllNodes(struct Node *target, char *buff, int size){
     while(it != NULL){
         char temp[size];
         bzero(temp, size);
-        int ultSize = BUFF(temp, MAXNODE, "< ID: %s , Cost: %i >", it->name, it->cost);
+        int ultSize = BUFF(temp, size, "< ID: %s , Cost: %i >", it->name, it->cost);
         strncat(buff, temp, ultSize);
         it = it->next;
     }
@@ -118,6 +119,59 @@ int BuffAllLSPs(struct lspPool *pool, char *buff, int size){
     strcat(buff, "}");
     return 0;
 }
+
+int BuffRouteTable(struct RoutePool *pool, char *buff, int size){
+    if(pool == NULL){
+        return -1;
+    }
+    
+    bzero(buff, size);
+    struct Route *it = pool->route;
+
+    strncat(buff, "[", 1);
+    while(it != NULL){
+        char temp[size];
+        bzero(temp, size);
+        int ultSize = BUFF(temp, size,
+                "< Dest: %s , Cost: %i , OutPort: %i , DestPort: %i >", 
+                it->dest, it->cost, it->outPort, it->destPort);
+        strncat(buff, temp, ultSize);
+        it = it->next;
+    }
+    strncat(buff, "]", 1);
+    
+    buff[size-1] = 0;
+    return 0;
+}
+
+int LogRoute(struct Route *route, FILE *file){
+    if(route == NULL){
+        return -1;
+    }
+    
+    struct Route *it = route->next;
+    while(it != NULL){
+        LOG(file, "< Dest: %s , Cost: %i , OutPort: %i , DestPort: %i >", 
+                it->dest, it->cost, it->outPort, it->destPort);
+        it = it->next;
+    }
+    return 0;
+}
+
+int LogRouteTable(struct RoutePool *pool, FILE *file){
+    if(pool == NULL){
+        return -1;
+    }
+    
+    struct Route *it = pool->route;
+    LOG(file, "----------------Routing Table--------------\n");
+    while(it != NULL){
+        LogRoute(it, file);
+        LOG(file, "\n");
+    }
+    LOG(file, "---------End of Routing Table--------------\n");
+}
+
 
 int LogLSP(struct LSP *lsp, FILE *file){
     if (lsp == NULL) { //Must be valid LSP

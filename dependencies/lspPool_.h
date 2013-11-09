@@ -7,12 +7,9 @@ struct lspPool {
 
 struct lspPool *createLSPPool(){
     struct lspPool *tmp;
-
-    //Memory allocation:
     if ((tmp = (struct lspPool *) malloc(sizeof (struct lspPool))) == NULL) {
         return NULL; //Not enough memory
     }
-    
     return tmp;
 }
 
