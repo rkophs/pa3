@@ -56,13 +56,13 @@ void releaseLSP(struct LSP *target) {
     target = NULL;
 }
 
-int addNeighbor(struct LSP *target, int cost, char *name, int nameLength) {
+int addNeighbor(struct LSP *target, int cost, char *name, int nameLength, int srcPort, int destPort) {
     if (target == NULL) {
         return -1;
     }
 
     int status;
-    if ((status = appendNode(target->neighbors, cost, name, nameLength)) < 0) {
+    if ((status = appendNode(target->neighbors, cost, name, nameLength, srcPort, destPort)) < 0) {
         return -1;
     }
     target->neighborCount++;
@@ -80,6 +80,20 @@ int delNeighbor(struct LSP *target, char *name) {
     }
     target->neighborCount--;
     return 0;
+}
+
+struct Node *getNeighbor(struct LSP *target, int it){
+    if(target == NULL || target->neighbors == NULL){
+        return NULL;
+    }
+    
+    int i;
+    struct Node *tmp = target->neighbors;
+    for(i = 1; i < it && tmp != NULL; i++){
+        tmp = tmp->next;
+    }
+    
+    return tmp;
 }
 
 void emptyNeighbors(struct LSP *target) {

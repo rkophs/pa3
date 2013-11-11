@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "routePool_.h"
 #include "lspPool_.h"
 
 struct Route {
@@ -19,7 +20,6 @@ struct Map {
 struct RoutePool {
     char name[32];
     int count;
-    int mapCount;
     struct Route *route;
     struct Map *map;
 };
@@ -40,7 +40,6 @@ struct RoutePool *initRoutePool(char *name, int nameSize) {
     tmp->count = 0;
     tmp->route = NULL;
     tmp->map = NULL;
-    tmp->mapCount = 0;
     return tmp;
 }
 
@@ -50,7 +49,7 @@ int getEntry(struct RoutePool *pool, char *entry) {
         return -1;
     }
     int i;
-    for (i = 0; i < pool->mapCount; i++) {
+    for (i = 0; i < pool->count; i++) {
         if (!strcmp(pool->map[i].name, entry)) {
             return i;
         }
@@ -60,9 +59,9 @@ int getEntry(struct RoutePool *pool, char *entry) {
 
 //Private:
 int putEntry(struct RoutePool *pool, char *entry, int entrySize) {
-    bzero(pool->map[pool->mapCount].name, sizeof (pool->map[pool->mapCount].name));
-    strncpy(pool->map[pool->mapCount].name, entry, entrySize);
-    pool->mapCount++;
+    bzero(pool->map[pool->count].name, sizeof (pool->map[pool->count].name));
+    strncpy(pool->map[pool->count].name, entry, entrySize);
+    pool->count++;
 }
 
 //Public
@@ -74,7 +73,6 @@ void releaseAllRoutes(struct RoutePool *pool) {
     free(pool->route);
     free(pool->map);
     pool->count = 0;
-    pool->mapCount = 0;
     pool->route = NULL;
     pool->map = NULL;
 }
@@ -97,6 +95,7 @@ int generateNodes(struct RoutePool *routes, struct lspPool* lsps) {
     }
 
     //Generate list of nodes:
+
     if ((routes->route = (struct Route *) malloc(sizeof (struct Route) * lsps->count)) == NULL) {
         return -1;
     }
@@ -104,10 +103,9 @@ int generateNodes(struct RoutePool *routes, struct lspPool* lsps) {
         free(routes->route);
         return -1;
     }
-    
     routes->count = lsps->count;
     struct LSP *srcLsp = getNeighborsByName(lsps, routes->name); //Don't free up!
-    
+
     //Put all names:
     int i;
     for (i = 0; i < routes->count; i++) {
@@ -121,6 +119,8 @@ int generateNodes(struct RoutePool *routes, struct lspPool* lsps) {
             routes->route[i].srcPort = -1;
             putEntry(routes, tmp->sourceName, strlen(tmp->sourceName));
         } else {
+            free(routes->route);
+            free(routes->map);
             return -1;
         }
     }
@@ -133,6 +133,8 @@ int generateNodes(struct RoutePool *routes, struct lspPool* lsps) {
         routes->route[i].destPort = 0;
         routes->route[i].srcPort = 0;
     } else {
+        free(routes->route);
+        free(routes->map);
         return -1;
     }
 
@@ -144,6 +146,8 @@ int generateNodes(struct RoutePool *routes, struct lspPool* lsps) {
             routes->route[j].destPort = neighbor->destPort;
             routes->route[j].srcPort = neighbor->srcPort;
         } else {
+            free(routes->route);
+            free(routes->map);
             return -1;
         }
     }

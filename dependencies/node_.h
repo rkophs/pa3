@@ -8,6 +8,8 @@
 struct Node {
     char name[32];
     int cost;
+    int srcPort;
+    int destPort;
     struct Node *next;
 };
 
@@ -21,7 +23,7 @@ struct Node *initList(){
     tmp->next = NULL;
 }
 
-int appendNode(struct Node *list, int cost, char *name, int nameLength) {
+int appendNode(struct Node *list, int cost, char *name, int nameLength, int srcPort, int destPort) {
     struct Node *tmp;
     if ((tmp = (struct Node *) malloc(sizeof (struct Node))) == NULL) {
         return -1; //Not enough memory
@@ -34,6 +36,8 @@ int appendNode(struct Node *list, int cost, char *name, int nameLength) {
         return -1;
     }
     tmp->cost = cost;
+    tmp->destPort = destPort;
+    tmp->srcPort = srcPort;
     tmp->next = NULL;
     
     struct Node *it;

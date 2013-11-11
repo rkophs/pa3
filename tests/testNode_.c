@@ -10,8 +10,26 @@ int main(int argc, char** argv) {
         return -1;
     }
     
+    printf("Append A\n");
+    appendNode(n1, 0, "A", 1, 12, 12);
+    bzero(buff, buffSize);
+    BuffAllNodes(n1, buff, buffSize);
+    printf("%s\n",buff);
     
-    appendNode(n1, 0, "A", 1);
+    printf("Delete n1\n");
+    emptyList(n1);
+    bzero(buff, buffSize);
+    BuffAllNodes(n1, buff, buffSize);
+    printf("%s\n",buff);
+    
+    printf("Append AA\n");
+    appendNode(n1, 0, "AA", 2, 12, 12);
+    bzero(buff, buffSize);
+    BuffAllNodes(n1, buff, buffSize);
+    printf("%s\n",buff);
+    
+    printf("Append B\n");
+    appendNode(n1, 5, "B", 1, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
@@ -21,32 +39,20 @@ int main(int argc, char** argv) {
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 0, "AA", 2);
+    printf("Append AAA\n");
+    appendNode(n1, 0, "AAA", 3, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 5, "B", 1);
+    printf("Append BB\n");
+    appendNode(n1, 5, "BB", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    emptyList(n1);
-    bzero(buff, buffSize);
-    BuffAllNodes(n1, buff, buffSize);
-    printf("%s\n",buff);
-    
-    appendNode(n1, 0, "AAA", 3);
-    bzero(buff, buffSize);
-    BuffAllNodes(n1, buff, buffSize);
-    printf("%s\n",buff);
-    
-    appendNode(n1, 5, "BB", 2);
-    bzero(buff, buffSize);
-    BuffAllNodes(n1, buff, buffSize);
-    printf("%s\n",buff);
-    
-    appendNode(n1, 6, "C", 1);
+    printf("Append C\n");
+    appendNode(n1, 6, "C", 1, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
@@ -56,17 +62,20 @@ int main(int argc, char** argv) {
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 0, "KOPHS", 5);
+    printf("Append KOPHS\n");
+    appendNode(n1, 0, "KOPHS", 5, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 10, "TESTS", 5);
+    printf("Append TESTS\n");
+    appendNode(n1, 10, "TESTS", 5, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "THESE", 15);
+    printf("Append THESE\n");
+    appendNode(n1, 234, "THESE", 15, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
@@ -96,32 +105,38 @@ int main(int argc, char** argv) {
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 23, "a1", 2);
+    printf("Append a1\n");
+    appendNode(n1, 23, "a1", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 10, "a2", 2);
+    printf("Append a2\n");
+    appendNode(n1, 10, "a2", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "a3", 2);
+    printf("Append a3\n");
+    appendNode(n1, 234, "a3", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
 
-    appendNode(n1, 0, "a4", 2);
+    printf("Append a4\n");
+    appendNode(n1, 0, "a4", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 10, "a5", 2);
+    printf("Append a5\n");
+    appendNode(n1, 10, "a5", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "a6", 2);
+    printf("Append a6\n");
+    appendNode(n1, 234, "a6", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
@@ -141,22 +156,26 @@ int main(int argc, char** argv) {
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "a7", 2);
+    printf("Append a7\n");
+    appendNode(n1, 234, "a7", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "a7", 2);
+    printf("Append a7\n");
+    appendNode(n1, 234, "a7", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "a1", 2);
+    printf("Append a1\n");
+    appendNode(n1, 234, "a1", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "a3", 2);
+    printf("Append a3\n");
+    appendNode(n1, 234, "a3", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
@@ -171,7 +190,8 @@ int main(int argc, char** argv) {
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);
     
-    appendNode(n1, 234, "a8", 2);
+    printf("Append a8\n");
+    appendNode(n1, 234, "a8", 2, 12, 12);
     bzero(buff, buffSize);
     BuffAllNodes(n1, buff, buffSize);
     printf("%s\n",buff);

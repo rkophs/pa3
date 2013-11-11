@@ -1,7 +1,6 @@
 
 #include <stdarg.h>
 
-#include "lspPool_.h"
 #include "routePool_.h"
 
 void insertNum(char * buffer, int buffSize, int num, int leastSignificantPos){
@@ -53,10 +52,10 @@ int LogAllNodes(struct Node *target, FILE* file){
     
     struct Node *it;
     it = target->next;
-    
-    int i = 0;
+
     while(it != NULL){
-        LOG(file, "< ID: %s , Cost: %i >", it->name, it->cost);
+        LOG(file, "< ID: %s , Cost: %i , SrcPort: %i , DestPort: %i >", 
+                it->name, it->cost, it->srcPort, it->destPort);
         it = it->next;
     }
     return 0;
@@ -74,7 +73,8 @@ int BuffAllNodes(struct Node *target, char *buff, int size){
     while(it != NULL){
         char temp[size];
         bzero(temp, size);
-        int ultSize = BUFF(temp, size, "< ID: %s , Cost: %i >", it->name, it->cost);
+        int ultSize = BUFF(temp, size, "< ID: %s , Cost: %i , SrcPort: %i , DestPort: %i >", 
+                it->name, it->cost, it->srcPort, it->destPort);
         strncat(buff, temp, ultSize);
         it = it->next;
     }
@@ -88,9 +88,6 @@ int BuffLSP(struct LSP *lsp, char *buff, int size) {
         return -1;
     }
     int nStrS = lsp->neighborCount * MAXNODE + 1;
-    if(size < nStrS + 100){
-        return -1;
-    }
 
     bzero(buff, size);
     char nodes[nStrS];
@@ -98,7 +95,8 @@ int BuffLSP(struct LSP *lsp, char *buff, int size) {
     if(lsp->neighborCount > 0){
         BuffAllNodes(lsp->neighbors, nodes, nStrS);
     }
-    BUFF(buff, size, "[%s , %i , %i , %i , {%s}]", lsp->sourceName, lsp->seqNum, lsp->timeToLive, lsp->neighborCount, nodes);
+    BUFF(buff, size, "[%s , %i , %i , %i , {%s}]", lsp->sourceName, lsp->seqNum, 
+            lsp->timeToLive, lsp->neighborCount, nodes);
     buff[size - 1] = 0;
     return 0;
 }
@@ -126,35 +124,20 @@ int BuffRouteTable(struct RoutePool *pool, char *buff, int size){
     }
     
     bzero(buff, size);
-    struct Route *it = pool->route;
-
     strncat(buff, "[", 1);
-    while(it != NULL){
+    int i;
+    for(i = 0 ; i < pool->count; i++){
         char temp[size];
         bzero(temp, size);
         int ultSize = BUFF(temp, size,
-                "< Dest: %s , Cost: %i , OutPort: %i , DestPort: %i >", 
-                it->dest, it->cost, it->outPort, it->destPort);
+                "< Dest: %s , Cost: %i , SrcPort: %i , DestPort: %i >", 
+                pool->route[i].dest, pool->route[i].cost, 
+                pool->route[i].srcPort, pool->route[i].destPort);
         strncat(buff, temp, ultSize);
-        it = it->next;
     }
     strncat(buff, "]", 1);
     
     buff[size-1] = 0;
-    return 0;
-}
-
-int LogRoute(struct Route *route, FILE *file){
-    if(route == NULL){
-        return -1;
-    }
-    
-    struct Route *it = route->next;
-    while(it != NULL){
-        LOG(file, "< Dest: %s , Cost: %i , OutPort: %i , DestPort: %i >", 
-                it->dest, it->cost, it->outPort, it->destPort);
-        it = it->next;
-    }
     return 0;
 }
 
@@ -165,8 +148,11 @@ int LogRouteTable(struct RoutePool *pool, FILE *file){
     
     struct Route *it = pool->route;
     LOG(file, "----------------Routing Table--------------\n");
-    while(it != NULL){
-        LogRoute(it, file);
+    int i;
+    for(i = 0; i < pool->count; i++){
+        LOG(file,"< Dest: %s , Cost: %i , SrcPort: %i , DestPort: %i >", 
+                pool->route[i].dest, pool->route[i].cost, 
+                pool->route[i].srcPort, pool->route[i].destPort);
         LOG(file, "\n");
     }
     LOG(file, "---------End of Routing Table--------------\n");
@@ -178,7 +164,8 @@ int LogLSP(struct LSP *lsp, FILE *file){
         return -1;
     }
     
-    LOG(file, "[%s , %i , %i , %i , {", lsp->sourceName, lsp->seqNum, lsp->timeToLive, lsp->neighborCount);
+    LOG(file, "[%s , %i , %i , %i , {", lsp->sourceName, lsp->seqNum, 
+            lsp->timeToLive, lsp->neighborCount);
     LogAllNodes(lsp->neighbors, file);
     LOG(file, "%s}]");
     

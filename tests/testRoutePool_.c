@@ -14,76 +14,104 @@
  */
 int main(int argc, char** argv) {
     
+    
+    struct lspPool *pool;
     int buffSize = 2048;
     char buff[buffSize];
-    
-    struct RoutePool *pool = initRoutePool();
-    
-    struct Route *r0 = initRoute("A",1,10,3456,6789);
-    struct Route *r1 = initRoute("B",1,23,3426,6589);
-    struct Route *r2 = initRoute("C",1,45,3356,6489);
-    struct Route *r3 = initRoute("D",1,11,3426,6289);
-    struct Route *r4 = initRoute("E",1,19,3451,6389);
-    struct Route *r5 = initRoute("F",1,53,2456,6189);
-    struct Route *r6 = initRoute("F",1,34,1236,2199);
-    struct Route *r7 = initRoute("A",1,99,4566,9149);
-    struct Route *r8 = initRoute("B",1,59,2896,6929);
-    
-    printf("adding r0\n");
-    overrideAppendRoute(pool, r0);
     bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
+    
+    struct LSP *n1; struct LSP *n2; struct LSP *n3; struct LSP *n4; struct LSP *n5;
+    struct LSP *n6;
+    
+    pool = createLSPPool();
+    n1 = createLSP("A", 1, 10, 5);
+    addNeighbor(n1, 4, "B", 1, 9701, 9704);
+    addNeighbor(n1, 1, "C", 1, 9702, 9706);
+    addNeighbor(n1, 4, "F", 1, 9703, 9717);
+    n2 = createLSP("B", 1, 11, 5);
+    addNeighbor(n2, 4, "A", 1, 9704, 9701);
+    addNeighbor(n2, 1, "D", 1, 9705, 9709);
+    n3 = createLSP("C", 1, 12, 5);
+    addNeighbor(n3, 1, "A", 1, 9706, 9702);
+    addNeighbor(n3, 1, "D", 1, 9707, 9710);
+    addNeighbor(n3, 3, "E", 1, 9708, 9713);
+    n4 = createLSP("D", 1, 13, 5);
+    addNeighbor(n4, 1, "B", 1, 9709, 9705);
+    addNeighbor(n4, 1, "C", 1, 9710, 9707);
+    addNeighbor(n4, 1, "E", 1, 9711, 9714);
+    addNeighbor(n4, 2, "F", 1, 9712, 9718);
+    n5 = createLSP("E", 1, 14, 6);
+    addNeighbor(n5, 3, "C", 1, 9713, 9708);
+    addNeighbor(n5, 1, "D", 1, 9714, 9711);
+    addNeighbor(n5, 1, "F", 1, 9715, 9716);
+    n6 = createLSP("F", 1, 15, 4);
+    addNeighbor(n6, 4, "A", 1, 9717, 9703);
+    addNeighbor(n6, 2, "D", 1, 9718, 9712);
+    addNeighbor(n6, 1, "E", 1, 9716, 9715);
+    
+    lspPoolCtrl(pool, n1);
+    lspPoolCtrl(pool, n2);
+    lspPoolCtrl(pool, n3);
+    lspPoolCtrl(pool, n4);
+    lspPoolCtrl(pool, n5);
+    lspPoolCtrl(pool, n6);
+    bzero(buff, buffSize);
+    BuffAllLSPs(pool, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("adding r1\n");
-    overrideAppendRoute(pool, r1);
+    printf("Executing Dijkstra's...\n");
+    
+    struct RoutePool *rA = initRoutePool("A", 1);
+    struct RoutePool *rB = initRoutePool("B", 1);
+    struct RoutePool *rC = initRoutePool("C", 1);
+    struct RoutePool *rD = initRoutePool("D", 1);
+    struct RoutePool *rE = initRoutePool("E", 1);
+    struct RoutePool *rF = initRoutePool("F", 1);
+    
+    printf("Pool A\n");
+    dijkstrasEngine(rA, pool);
     bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
+    BuffRouteTable(rA, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("adding r2\n");
-    overrideAppendRoute(pool, r2);
+    printf("Pool B\n");
+    dijkstrasEngine(rB, pool);
     bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
+    BuffRouteTable(rB, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("adding r3\n");
-    overrideAppendRoute(pool, r3);
+    printf("Pool C\n");
+    dijkstrasEngine(rC, pool);
     bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
+    BuffRouteTable(rC, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("adding r4\n");
-    overrideAppendRoute(pool, r4);
+    printf("Pool D\n");
+    dijkstrasEngine(rD, pool);
     bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
+    BuffRouteTable(rD, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("adding r5\n");
-    overrideAppendRoute(pool, r5);
+    printf("Pool E\n");
+    dijkstrasEngine(rE, pool);
     bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
+    BuffRouteTable(rE, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("adding r6\n");
-    overrideAppendRoute(pool, r6);
+    printf("Pool F\n");
+    dijkstrasEngine(rF, pool);
     bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
+    BuffRouteTable(rF, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("adding r7\n");
-    overrideAppendRoute(pool, r7);
-    bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
-    printf("%s\n", buff);
+    releaseRoutePool(rA);
+    releaseRoutePool(rB);
+    releaseRoutePool(rC);
+    releaseRoutePool(rD);
+    releaseRoutePool(rE);
+    releaseRoutePool(rF);
     
-    printf("adding r8\n");
-    overrideAppendRoute(pool, r8);
-    bzero(buff, buffSize);
-    BuffRouteTable(pool, buff, buffSize);
-    printf("%s\n", buff);
-    
-    releaseRoutePool(pool);
+    releaseLSPPool(pool);
     
     return (EXIT_SUCCESS);
 }

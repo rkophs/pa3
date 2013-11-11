@@ -3,6 +3,7 @@
 
 struct lspPool {
     struct LSP *lsps;
+    int count;
 };
 
 struct lspPool *createLSPPool(){
@@ -21,6 +22,7 @@ int shallowAppendLSP(struct lspPool *pool, struct LSP *shallowCpy) {
     
     if(pool->lsps == NULL){
         pool->lsps = shallowCpy;
+        pool->count++;
         return 0;
     }
 
@@ -36,36 +38,8 @@ int shallowAppendLSP(struct lspPool *pool, struct LSP *shallowCpy) {
         return -1;
     }
     it->next = shallowCpy;
+    pool->count++;
     return 0;
-}
-
-int delSingleLSP(struct lspPool *pool, char *name){
-    if(pool == NULL){
-        return -1;
-    }
-    
-    
-    if(!strcmp(pool->lsps->sourceName, name)){ //First node remove
-        struct LSP *tmp = pool->lsps;
-        pool->lsps = pool->lsps->next;
-        releaseLSP(tmp);
-        return 0;
-    }
-    
-    struct LSP *curr = pool->lsps->next;
-    struct LSP *prev = pool->lsps;
-    
-    while(curr != NULL){
-        if(!strcmp(curr->sourceName, name)){
-            struct LSP *tmp = curr->next;
-            releaseLSP(curr);
-            prev->next = tmp;
-            return 0;
-        }
-        curr = curr->next;
-        prev = prev->next;
-    }
-    return -1;
 }
 
 int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
@@ -100,12 +74,39 @@ int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
     return -1;
 }
 
-void releaseAllLSPs(struct LSP *lsp){
-    if(lsp == NULL){
+struct LSP *getNeighborsByName(struct lspPool *pool, char *src){
+    if(pool == NULL){
+        return NULL;
+    }
+    struct LSP *it = pool->lsps;
+    while(it != NULL){
+        if(!strcmp(it->sourceName, src)){
+            //match:
+            return it;
+        }
+        it = it->next;
+    }
+    return NULL;
+}
+
+struct LSP *getNeighborsByIt(struct lspPool *pool, int num){
+    if(pool == NULL || pool->count <= num){
+        return NULL;
+    }
+    struct LSP *it = pool->lsps;
+    int i;
+    for(i = 1; i <= num && i < pool->count; i++ ){
+        it = it->next;
+    }
+    return it;
+}
+
+void releaseAllLSPs(struct lspPool *pool){
+    if(pool == NULL){
         return;
     }
     
-    struct LSP *it = lsp;
+    struct LSP *it = pool->lsps;
     struct LSP *tmp;
     
     while (it != NULL) {
@@ -113,15 +114,16 @@ void releaseAllLSPs(struct LSP *lsp){
         releaseLSP(it);
         it = tmp;
     }
-    
-    lsp = NULL;
+    pool->count = 0;
+    pool->lsps = NULL;
 }
 
 void releaseLSPPool(struct lspPool *target){
     if(target == NULL){
         return;
     }
-    releaseAllLSPs(target->lsps);
+    releaseAllLSPs(target);
+    target->count = 0;
     free(target);
     target = NULL;
 }
