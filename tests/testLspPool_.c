@@ -64,42 +64,6 @@ int main(int argc, char** argv) {
     BuffAllLSPs(n1, buff, buffSize);
     printf("%s\n", buff);
     
-    printf("Delete B:\n");
-    delSingleLSP(n1, "B");
-    bzero(buff, buffSize);
-    BuffAllLSPs(n1, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Delete C:\n");
-    delSingleLSP(n1, "C");
-    bzero(buff, buffSize);
-    BuffAllLSPs(n1, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Delete A:\n");
-    delSingleLSP(n1, "A");
-    bzero(buff, buffSize);
-    BuffAllLSPs(n1, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Delete G:\n");
-    delSingleLSP(n1, "G");
-    bzero(buff, buffSize);
-    BuffAllLSPs(n1, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Delete E:\n");
-    delSingleLSP(n1, "E");
-    bzero(buff, buffSize);
-    BuffAllLSPs(n1, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Delete D:\n");
-    delSingleLSP(n1, "D");
-    bzero(buff, buffSize);
-    BuffAllLSPs(n1, buff, buffSize);
-    printf("%s\n", buff);
-    
     printf("Append n6:\n");
     shallowAppendLSP(n1, n6);
     bzero(buff, buffSize);
@@ -201,6 +165,30 @@ int main(int argc, char** argv) {
     CmpSwapSingleLSP(n1, nc);
     bzero(buff, buffSize);
     BuffAllLSPs(n1, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get 0 it:\n");
+    struct LSP *tmp = getNeighborsByIt(n1, 0);
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get 1 it:\n");
+    tmp = getNeighborsByIt(n1, 1);
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get 2 it:\n");
+    tmp = getNeighborsByIt(n1, 2);
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get 3 it:\n");
+    tmp = getNeighborsByIt(n1, 3);
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
     printf("%s\n", buff);
     
     releaseLSPPool(n1);
