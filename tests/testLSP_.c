@@ -83,6 +83,22 @@ int main(int argc, char** argv) {
     BuffLSP(n1, buff, buffSize);
     printf("%s\n",buff);
     
+    printf("Get 0");
+    struct Node *a0 = getNeighborByIt(n1, 0);
+    printf(": %s\n", a0->name);
+    
+    printf("Get 1");
+    struct Node *a1 = getNeighborByIt(n1, 1);
+    printf(": %s\n", a1->name);
+    
+    printf("Get 2");
+    struct Node *a2 = getNeighborByIt(n1, 2);
+    printf(": %s\n", a2->name);
+    
+    printf("Get 3");
+    struct Node *a3 = getNeighborByIt(n1, 3);
+    printf(": %s\n", a3->name);
+    
     printf("Deleting THESE\n");
     delNeighbor(n1, "THESE");
     bzero(buff, buffSize);

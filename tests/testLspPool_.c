@@ -168,25 +168,49 @@ int main(int argc, char** argv) {
     printf("%s\n", buff);
     
     printf("Get 0 it:\n");
-    struct LSP *tmp = getNeighborsByIt(n1, 0);
+    struct LSP *tmp = getLSPByIt(n1, 0);
     bzero(buff, buffSize);
     BuffLSP(tmp, buff, buffSize);
     printf("%s\n", buff);
     
     printf("Get 1 it:\n");
-    tmp = getNeighborsByIt(n1, 1);
+    tmp = getLSPByIt(n1, 1);
     bzero(buff, buffSize);
     BuffLSP(tmp, buff, buffSize);
     printf("%s\n", buff);
     
     printf("Get 2 it:\n");
-    tmp = getNeighborsByIt(n1, 2);
+    tmp = getLSPByIt(n1, 2);
     bzero(buff, buffSize);
     BuffLSP(tmp, buff, buffSize);
     printf("%s\n", buff);
     
     printf("Get 3 it:\n");
-    tmp = getNeighborsByIt(n1, 3);
+    tmp = getLSPByIt(n1, 3);
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get A:\n");
+    tmp = getLSPByName(n1, "A");
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get B:\n");
+    tmp = getLSPByName(n1, "B");
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get C:\n");
+    tmp = getLSPByName(n1, "C");
+    bzero(buff, buffSize);
+    BuffLSP(tmp, buff, buffSize);
+    printf("%s\n", buff);
+    
+    printf("Get D:\n");
+    tmp = getLSPByName(n1, "D");
     bzero(buff, buffSize);
     BuffLSP(tmp, buff, buffSize);
     printf("%s\n", buff);
