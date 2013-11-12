@@ -183,15 +183,7 @@ struct LSP* getNextTentativeLSP(struct RoutePool *routes, struct lspPool *lsps) 
     return tmp;
 }
 
-
-//Public
-
-int dijkstrasEngine(struct RoutePool *routes, struct lspPool* lsps) {
-    int i = generateNodes(routes, lsps); //Step 1.
-    if (i < 0) {
-        return -1;
-    }
-
+int generateRoutes(struct RoutePool *routes, struct lspPool* lsps){
     struct LSP *nextLSP;
     int routeIt;
     if ((nextLSP = getNextTentativeLSP(routes, lsps)) == NULL) {
@@ -213,6 +205,7 @@ int dijkstrasEngine(struct RoutePool *routes, struct lspPool* lsps) {
             return -1; //This should never happen (infinity)
         }
         //Step 3:
+        int i;
         for (i = 0; i < nextLSP->neighborCount; i++) { //Step 3;
 
             struct Node *neighbor = getNeighborByIt(nextLSP, i);
@@ -250,4 +243,12 @@ int dijkstrasEngine(struct RoutePool *routes, struct lspPool* lsps) {
         }
         routes->route[routeIt].confirmed = 1;
     };
+}
+
+//Public
+int dijkstrasEngine(struct RoutePool *routes, struct lspPool* lsps) {
+    if(generateNodes(routes, lsps) < 0){ //Step 1.
+        return -1;
+    }
+    return generateRoutes(routes, lsps);
 }
