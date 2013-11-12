@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     bzero(buff, buffSize);
     BuffAllLSPs(pool, buff, buffSize);
     printf("%s\n", buff);
-    
+        
     printf("Executing Dijkstra's...\n");
     
     struct RoutePool *rA = initRoutePool("A", 1);
@@ -73,36 +73,36 @@ int main(int argc, char** argv) {
     bzero(buff, buffSize);
     BuffRouteTable(rA, buff, buffSize);
     printf("%s\n", buff);
-    
-    printf("Pool B\n");
-    dijkstrasEngine(rB, pool);
-    bzero(buff, buffSize);
-    BuffRouteTable(rB, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Pool C\n");
-    dijkstrasEngine(rC, pool);
-    bzero(buff, buffSize);
-    BuffRouteTable(rC, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Pool D\n");
-    dijkstrasEngine(rD, pool);
-    bzero(buff, buffSize);
-    BuffRouteTable(rD, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Pool E\n");
-    dijkstrasEngine(rE, pool);
-    bzero(buff, buffSize);
-    BuffRouteTable(rE, buff, buffSize);
-    printf("%s\n", buff);
-    
-    printf("Pool F\n");
-    dijkstrasEngine(rF, pool);
-    bzero(buff, buffSize);
-    BuffRouteTable(rF, buff, buffSize);
-    printf("%s\n", buff);
+//    
+//    printf("Pool B\n");
+//    dijkstrasEngine(rB, pool);
+//    bzero(buff, buffSize);
+//    BuffRouteTable(rB, buff, buffSize);
+//    printf("%s\n", buff);
+//    
+//    printf("Pool C\n");
+//    dijkstrasEngine(rC, pool);
+//    bzero(buff, buffSize);
+//    BuffRouteTable(rC, buff, buffSize);
+//    printf("%s\n", buff);
+//    
+//    printf("Pool D\n");
+//    dijkstrasEngine(rD, pool);
+//    bzero(buff, buffSize);
+//    BuffRouteTable(rD, buff, buffSize);
+//    printf("%s\n", buff);
+//    
+//    printf("Pool E\n");
+//    dijkstrasEngine(rE, pool);
+//    bzero(buff, buffSize);
+//    BuffRouteTable(rE, buff, buffSize);
+//    printf("%s\n", buff);
+//    
+//    printf("Pool F\n");
+//    dijkstrasEngine(rF, pool);
+//    bzero(buff, buffSize);
+//    BuffRouteTable(rF, buff, buffSize);
+//    printf("%s\n", buff);
     
     releaseRoutePool(rA);
     releaseRoutePool(rB);

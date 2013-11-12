@@ -82,14 +82,14 @@ int delNeighbor(struct LSP *target, char *name) {
     return 0;
 }
 
-struct Node *getNeighbor(struct LSP *target, int it){
+struct Node *getNeighborByIt(struct LSP *target, int it){
     if(target == NULL || target->neighbors == NULL){
         return NULL;
     }
     
     int i;
-    struct Node *tmp = target->neighbors;
-    for(i = 1; i < it && tmp != NULL; i++){
+    struct Node *tmp = target->neighbors->next;
+    for(i = 1; i <= it && tmp != NULL; i++){
         tmp = tmp->next;
     }
     

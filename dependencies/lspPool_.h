@@ -74,7 +74,7 @@ int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
     return -1;
 }
 
-struct LSP *getNeighborsByName(struct lspPool *pool, char *src){
+struct LSP *getLSPByName(struct lspPool *pool, char *src){
     if(pool == NULL){
         return NULL;
     }
@@ -89,7 +89,7 @@ struct LSP *getNeighborsByName(struct lspPool *pool, char *src){
     return NULL;
 }
 
-struct LSP *getNeighborsByIt(struct lspPool *pool, int num){
+struct LSP *getLSPByIt(struct lspPool *pool, int num){
     if(pool == NULL || pool->count <= num){
         return NULL;
     }
