@@ -8,7 +8,7 @@ struct LSP {
     char sourceName[32];
     int timeToLive;
     int seqNum;
-    struct Node * neighbors;
+    struct Node *neighbors;
     int neighborCount;
     struct LSP *next;
 };
@@ -51,7 +51,6 @@ void releaseLSP(struct LSP *target) {
     if (target->neighbors != NULL) {
         deleteList(target->neighbors);
     }
-
     free(target);
     target = NULL;
 }

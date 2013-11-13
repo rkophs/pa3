@@ -216,10 +216,17 @@ int main(int argc, char** argv) {
     printf("%s\n", buff);
     
     releaseLSPPool(n1);
+    releaseLSP(n2);
+    releaseLSP(n3);
+    releaseLSP(n4);
+    releaseLSP(n5);
     releaseLSP(n6);
     releaseLSP(n7);
+    releaseLSP(n8);
+    releaseLSP(n9);
     releaseLSP(na);
     releaseLSP(nb);
+    releaseLSP(nc);
     
     return (EXIT_SUCCESS);
 }
