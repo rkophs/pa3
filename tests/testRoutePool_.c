@@ -104,23 +104,10 @@ int main(int argc, char** argv) {
     BuffRouteTable(rF, buff, buffSize);
     printf("%s\n", buff);
     
-    releaseRoutePool(rA);
-    releaseRoutePool(rB);
-    releaseRoutePool(rC);
-    releaseRoutePool(rD);
-    releaseRoutePool(rE);
-    releaseRoutePool(rF);
-    
     releaseLSPPool(pool);
     
     //---------------------------------------------
     
-    rA = initRoutePool("A", 1);
-    rB = initRoutePool("B", 1);
-    rC = initRoutePool("C", 1);
-    rD = initRoutePool("D", 1);
-    rE = initRoutePool("E", 1);
-    rF = initRoutePool("F", 1);
     struct RoutePool *rG = initRoutePool("G", 1);
     struct RoutePool *rH = initRoutePool("H", 1);
     struct RoutePool *rI = initRoutePool("I", 1);

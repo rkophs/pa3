@@ -87,13 +87,28 @@ struct Node *getNeighborByIt(struct LSP *target, int it){
         return NULL;
     }
     
-    int i;
+    int i = 1;
     struct Node *tmp = target->neighbors->next;
-    for(i = 1; i <= it && tmp != NULL; i++){
+    while(i <= it && tmp != NULL){
         tmp = tmp->next;
+        i++;
     }
-    
     return tmp;
+}
+
+int getTTL(struct LSP *target){
+    if(target == NULL){
+        return -1;
+    }
+    return target->timeToLive;
+}
+
+int decrementTTL(struct LSP *target){
+    if(target == NULL){
+        return -1;
+    }
+    target->timeToLive--;
+    return 0;
 }
 
 void emptyNeighbors(struct LSP *target) {

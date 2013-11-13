@@ -48,8 +48,8 @@ int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
     }
     
     struct LSP *lsp = pool->lsps;
-    if((!strcmp(lsp->sourceName, swap->sourceName)) && swap->seqNum < lsp->seqNum){
-        //Match: The sourceNames match, indicating same packet, and the swap seq # is lower
+    if((!strcmp(lsp->sourceName, swap->sourceName)) && swap->seqNum > lsp->seqNum){
+        //Match: The sourceNames match, indicating same packet, and the swap seq # is higher
         struct LSP* tmp = lsp->next;
         releaseLSP(lsp);
         pool->lsps = swap;
@@ -60,8 +60,8 @@ int CmpSwapSingleLSP(struct lspPool *pool, struct LSP *swap){
     struct LSP* curr = lsp->next;
     struct LSP* prev = lsp;
     while(curr != NULL){
-        if((!strcmp(curr->sourceName, swap->sourceName)) && swap->seqNum < curr->seqNum){
-            //Match: The sourceNames match, indicating same packet, and the swap seq # is lower
+        if((!strcmp(curr->sourceName, swap->sourceName)) && swap->seqNum > curr->seqNum){
+            //Match: The sourceNames match, indicating same packet, and the swap seq # is higher
             struct LSP* tmp = curr->next;
             releaseLSP(curr);
             prev->next = swap;
@@ -101,6 +101,37 @@ struct LSP *getLSPByIt(struct lspPool *pool, int num){
     return it;
 }
 
+int delSingleLSP(struct lspPool *pool, char *name){
+    if(pool == NULL){
+        return -1;
+    }
+    
+    
+    if(!strcmp(pool->lsps->sourceName, name)){ //First node remove
+        struct LSP *tmp = pool->lsps;
+        pool->lsps = pool->lsps->next;
+        releaseLSP(tmp);
+        pool->count--;
+        return 0;
+    }
+    
+    struct LSP *curr = pool->lsps->next;
+    struct LSP *prev = pool->lsps;
+    
+    while(curr != NULL){
+        if(!strcmp(curr->sourceName, name)){
+            struct LSP *tmp = curr->next;
+            releaseLSP(curr);
+            prev->next = tmp;
+            pool->count++;
+            return 0;
+        }
+        curr = curr->next;
+        prev = prev->next;
+    }
+    return -1;
+}
+
 void releaseAllLSPs(struct lspPool *pool){
     if(pool == NULL){
         return;
@@ -128,16 +159,37 @@ void releaseLSPPool(struct lspPool *target){
     target = NULL;
 }
 
+/* 
+ *              -1: Invalid, error occurred
+ *               0: LSP already exists in pool at higher Seq#, dropped LSP
+ *               1: Existing did not exist, LSP was successfully added
+ *               2: Existing LSP was updated with new LSP of higher Seq#
+ *               3: TTL of input is 0, corresponding LSP in pool was deleted
+ *               4: TTL of input is 0, no corresponding LSP, stop transmit of 0
+ */
 int lspPoolCtrl(struct lspPool *target, struct LSP *lsp){
     if(target == NULL || lsp == NULL){
+        releaseLSP(lsp);
         return -1; //Invalid entries
     }
+    
+//    if(getTTL(lsp) == 0){ //Time to live is 0:
+//        int stat = delSingleLSP(target, lsp->sourceName);
+//        if(stat == -1){ //Nothing was deleted, so it didn't exist to begin
+//            releaseLSP(lsp); //Do not need to retransmit;
+//            return 4;
+//        }
+//        return 3; //Something was deleted, retransmission will be needed
+//    } else {
+//        decrementTTL(lsp);
+//    }
+//    
     if(shallowAppendLSP(target, lsp) < 0 ){ //lsp seqName already exists
-        if(CmpSwapSingleLSP(target, lsp) < 0){ //lsp exists w/ lower seq already
+        if(CmpSwapSingleLSP(target, lsp) < 0){ //lsp exists w/ higher seq already
             releaseLSP(lsp); //Release this LSP because it is garbage
-            return -1; //already in pool at a lower number
+            return 0; //already in pool at a higher number
         }
-        return 2; //Updated LSP with lower Seq#;
+        return 2; //Updated LSP with higher Seq#;
     }
     return 1; //New LSP of unknown router name is added
 }

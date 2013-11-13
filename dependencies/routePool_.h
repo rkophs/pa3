@@ -26,9 +26,6 @@ struct RoutePool {
     struct Map *map;
 };
 
-struct Dijkstra {
-};
-
 //Public:
 
 struct RoutePool *initRoutePool(char *name, int nameSize) {
@@ -48,6 +45,36 @@ struct RoutePool *initRoutePool(char *name, int nameSize) {
     tmp->map = NULL;
     tmp->mapCount = 0;
     return tmp;
+}
+
+//Public
+
+void releaseAllRoutes(struct RoutePool *pool) {
+    if (pool == NULL) { //Not a header
+        return;
+    }
+    if (pool->route != NULL){
+        free(pool->route);
+    }
+    if (pool->map != NULL){
+        free(pool->map);
+    }
+    pool->count = 0;
+    pool->mapCount = 0;
+    pool->route = NULL;
+    pool->map = NULL;
+}
+
+//Public
+
+void releaseRoutePool(struct RoutePool *pool) {
+    if (pool == NULL) {
+        return;
+    }
+
+    releaseAllRoutes(pool);
+    free(pool);
+    pool = NULL;
 }
 
 //Private:
@@ -73,39 +100,14 @@ int putEntry(struct RoutePool *pool, char *entry, int entrySize) {
     pool->mapCount++;
 }
 
-//Public
-
-void releaseAllRoutes(struct RoutePool *pool) {
-    if (pool == NULL) { //Not a header
-        return;
-    }
-
-    free(pool->route);
-    free(pool->map);
-    pool->count = 0;
-    pool->mapCount = 0;
-    pool->route = NULL;
-    pool->map = NULL;
-}
-
-//Public
-
-void releaseRoutePool(struct RoutePool *pool) {
-    if (pool == NULL) {
-        return;
-    }
-
-    releaseAllRoutes(pool);
-    free(pool);
-    pool = NULL;
-}
-
 //Private:
 
 int generateNodes(struct RoutePool *routes, struct lspPool* lsps) {
     if (routes == NULL || lsps == NULL) {
         return -1;
     }
+    
+    releaseAllRoutes(routes);
 
     //Generate list of nodes:
     if ((routes->route = (struct Route *) malloc(sizeof (struct Route) * lsps->count)) == NULL) {
