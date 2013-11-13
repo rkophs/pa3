@@ -78,13 +78,15 @@ int deleteNode(struct Node *list, char *name) {
     return -1;
 }
 
-void emptyList(struct Node *target){
-    if(target == NULL || target->cost != -2){ //Not a header
-        return;
+int emptyList(struct Node *target){
+    if(target == NULL){ //Not a header
+        return -1;
+    }
+    if(target->cost != -2){
+        return -1;
     }
     struct Node *it;
     struct Node *tmp;
-    
     it = target->next;
     while (it != NULL) {
         tmp = it->next;
@@ -92,13 +94,15 @@ void emptyList(struct Node *target){
         it = tmp;
     }
     target->next = NULL;
+    return 0;
 }
 
 void deleteList(struct Node *target) {
     if(target == NULL){ //Already no memory
         return;
     }
-    emptyList(target);
-    free(target);
+    if(emptyList(target) >= 0){
+        free(target);
+    }
     target = NULL;
 }

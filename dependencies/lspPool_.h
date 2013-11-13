@@ -11,6 +11,7 @@ struct lspPool *createLSPPool(){
     if ((tmp = (struct lspPool *) malloc(sizeof (struct lspPool))) == NULL) {
         return NULL; //Not enough memory
     }
+    tmp->lsps = NULL;
     return tmp;
 }
 

@@ -1,4 +1,4 @@
-#include "routePool_.h"
+#include "parser_.h"
 
 struct Connection {
     int srcPort;
@@ -10,6 +10,7 @@ struct Engine {
     struct LSP* router;
     struct lspPool* lsps;
     struct RoutePool* routes;
+    struct ARGS *args;
     int it;
 };
 
@@ -22,7 +23,7 @@ struct Connection *initConnection(){
     tmp->srcPort = 0;
 }
 
-struct Engine *initEngine(char *name, int nameSize, struct LSP* router) {
+struct Engine *initEngine(struct LSP* router, struct ARGS *args) {
     struct Engine *tmp;
     if ((tmp = (struct Engine *) malloc(sizeof (struct Engine))) == NULL) {
         return NULL;
@@ -31,7 +32,7 @@ struct Engine *initEngine(char *name, int nameSize, struct LSP* router) {
         free(tmp);
         return NULL;
     }
-    if ((tmp->routes = initRoutePool(name, nameSize)) == NULL) {
+    if ((tmp->routes = initRoutePool(router->sourceName, strlen(router->sourceName))) == NULL) {
         releaseLSPPool(tmp->lsps);
         free(tmp);
         return NULL;
@@ -44,8 +45,44 @@ struct Engine *initEngine(char *name, int nameSize, struct LSP* router) {
     }
     tmp->router = router;
     tmp->it = 0;
+    tmp->args = args;
     
     return tmp;
+}
+
+struct Engine *startEngine(int argc, char **argv){
+    /* Parse and save arguments */
+    struct ARGS *args;
+    if((args = initArgs(argc, argv)) == NULL){
+        printf("Error parsing arguments\n");
+        return NULL;
+    }
+    
+    /* Instantiate Router LSP and a copy:*/
+    struct LSP *routerLSP;
+    struct LSP *nLSP;
+    if((routerLSP = parseLSP(args)) == NULL){
+        printf("Error copying file information\n");
+        free(args);
+        return NULL;
+    }
+    if((nLSP = parseLSP(args)) == NULL){
+        printf("Error copying file information\n");
+        releaseLSP(routerLSP);
+        free(args);
+        return NULL;
+    }
+    
+    /* Set up engine with the router information & add copy LSP to engine pool*/
+    struct Engine *engine;
+    if((engine = initEngine(routerLSP, args)) == NULL){
+        releaseLSP(routerLSP);
+        releaseLSP(nLSP);
+        free(args);
+    }
+    
+    engineProcessLSP(engine, nLSP);
+    return engine;
 }
 
 int engineProcessLSP(struct Engine *engine, struct LSP *lsp) {
@@ -89,10 +126,9 @@ void releaseEngine(struct Engine *engine) {
     releaseLSPPool(engine->lsps); //Also releases the routerLSP!!!
     releaseRoutePool(engine->routes);
     releaseLSP(engine->router);
+    free(engine->args);
     free(engine->connect);
-    engine->router = NULL;
-    engine->lsps = NULL;
-    engine->routes = NULL;
+    engine->connect = NULL;
     free(engine);
     engine = NULL;
 }

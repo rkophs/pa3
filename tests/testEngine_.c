@@ -5,13 +5,14 @@ int main(int argc, char** argv) {
 
     int buffSize = 1024;
     char buff[buffSize];
+    
 
     printf("Init router A:\n");
     struct LSP *router = createLSP("A", 1, 100, 0);
     addNeighbor(router, 4, "B", 1, 9701, 9704);
     addNeighbor(router, 1, "C", 1, 9702, 9706);
     addNeighbor(router, 4, "F", 1, 9703, 9717);
-    struct Engine *engine = initEngine("A", 1, router);
+    struct Engine *engine = initEngine(router, NULL);
 
     printf("Adding first LSP:\n");
     struct LSP *n0 = createLSP("A", 1, 100, 0);
@@ -107,6 +108,38 @@ int main(int argc, char** argv) {
     if (c != NULL) printf("C5: %i %i\n", c->srcPort, c->destPort);
     
     releaseEngine(engine);
+    engine = NULL;
+    
+    printf("new:------------------------\n");
+    
+    struct LSP *router3 = createLSP("A", 1, 100, 0);
+    addNeighbor(router3, 4, "B", 1, 9701, 9704);
+    addNeighbor(router3, 1, "C", 1, 9702, 9706);
+    addNeighbor(router3, 4, "F", 1, 9703, 9717);
+    struct Engine *engine3 = initEngine(router3, NULL);
+    
+    bzero(buff, buffSize);
+    BuffAllLSPs(engine3->lsps, buff, buffSize);
+    printf("%s\n", buff);
+    
+    struct LSP *router4 = createLSP("B", 1, 100, 0);
+    addNeighbor(router4, 4, "B", 1, 9701, 9704);
+    addNeighbor(router4, 1, "C", 1, 9702, 9706);
+    addNeighbor(router4, 4, "F", 1, 9703, 9717);
+    
+    struct LSP *router5 = createLSP("C", 1, 100, 0);
+    addNeighbor(router5, 4, "B", 1, 9701, 9704);
+    addNeighbor(router5, 1, "C", 1, 9702, 9706);
+    addNeighbor(router5, 4, "F", 1, 9703, 9717);
+    
+    engineProcessLSP(engine3, router4);
+    engineProcessLSP(engine3, router5);
+    
+    bzero(buff, buffSize);
+    BuffAllLSPs(engine3->lsps, buff, buffSize);
+    printf("%s\n", buff);
+    
+    releaseEngine(engine3);
 
     return (EXIT_SUCCESS);
 }
