@@ -1,6 +1,6 @@
 #include "dependencies/shared_.h"
 
-int bindListener(/*struct Connection *connect*/char* port) {
+int bindListener(struct Connection *connect) {
     int sockfd;
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("Error opening socket");
@@ -16,7 +16,7 @@ int bindListener(/*struct Connection *connect*/char* port) {
     struct sockaddr_in srcAddr;
     bzero(&srcAddr, sizeof (srcAddr));
     srcAddr.sin_family = AF_INET;
-    srcAddr.sin_port = htons(atoi(port)); //connect->srcPort;
+    srcAddr.sin_port = connect->srcPort;
     srcAddr.sin_addr.s_addr = INADDR_ANY;
     if (bind(sockfd, (struct sockaddr *) &srcAddr, sizeof (srcAddr)) < 0) {
         printf("Could not bind\n");
@@ -29,7 +29,7 @@ int bindListener(/*struct Connection *connect*/char* port) {
     return sockfd;
 }
 
-int bindConnector(/*struct Connection *connect*/char* port) {
+int bindConnector(struct Connection *connect) {
     int sockfd;
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("Error opening socket");
@@ -45,7 +45,7 @@ int bindConnector(/*struct Connection *connect*/char* port) {
     struct sockaddr_in destAddr;
     bzero(&destAddr, sizeof (destAddr)); //zero the struct
     destAddr.sin_family = AF_INET;
-    destAddr.sin_port = htons(atoi(port)); // connect->destPort;
+    destAddr.sin_port = connect->destPort;
 
     if (connect(sockfd, (struct sockaddr *) &destAddr, sizeof (destAddr)) < 0) {
         printf("Could not connect!\n");
@@ -56,27 +56,62 @@ int bindConnector(/*struct Connection *connect*/char* port) {
 
 int main(int argc, char **argv) {
 
-    //struct Engine* engine = startEngine(argc, argv);
+    struct Engine* engine = startEngine(argc, argv);
 
-    int s1;
-    if ((s1 = bindConnector(argv[1])) < 0) {
-        //Error connecting... now try listening:
-        int s2;
-        if ((s2 = bindListener(argv[2])) < 0) {
-            //error listening
-        } else {
-            int temp;
-            struct sockaddr_in remote;
-            bzero(&remote, sizeof(remote));
-            int len = sizeof(remote);
-            if((temp = accept(s2, (struct sockaddr *)&remote, &len)));
-            printf("Connected as a listener s2: %i, temp: %i\n", s2, temp);
+    struct Sockets {
+        int lSock = -1; //local socket
+        int rSock = -1; //remote: Only used for listeners
+        int type = -1; //0: connect 1:listener
+        int srcPort = -1;
+        int dstPort = -1;
+    };
+    int it = 0;
+    
+    struct Sockets socks[engine->router->neighborCount];
+    
+    struct Connection *connect;
+    
+    
+    //Bind listeners first
+    while (connect != NULL) {
+        if ((connect = engineNextNeighbor(engine)) != NULL) {
+            if (connect->srcPort > connect->destPort) { //Listen
+                int i;
+                if ((i = bindListener(connect)) < 0) {
+                    return -1;
+                }
+                socks[it].dstPort = connect->destPort;
+                socks[it].srcPort = connect->srcPort;
+                socks[it].type = 1;
+                socks[it].lSock = i; //ServerFD
+                it++;
+            }
         }
-    } else {
-        printf("Connected as a connector!\n");
     }
+    
+    //Now sleep and establish connectors:
+    sleep(10);
+    do {
+        if((connect = engineNextNeighbor(engine)) != NULL){
+            if(connect->srcPort < connect->destPort) { //Connect
+                int i;
+                if ((i = bindConnector(connect)) < 0){
+                    //Already waited many seconds, just end now.
+                    return -1;
+                }
+                socks[it].dstPort = connect->destPort;
+                socks[it].srcPort = connect->srcPort;
+                socks[it].lSock = i;
+                socks[it].type = 0;
+                it++;
+            }
+        }
+    } while (connect != NULL);
+    
+    //Now accept connectors:
+    
 
 
-    //releaseEngine(engine);
+    releaseEngine(engine);
     return 0;
 }
