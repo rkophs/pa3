@@ -121,3 +121,96 @@ struct LSP *parseInitFile(struct ARGS *args){
     fclose(file);
     return lsp;
 }
+
+struct LSP* parsePacket(char *buff, int buffSize, int *it, int *die){
+    char tmp[4];
+    bzero(tmp, 4);
+    int node = -1;
+    
+    int lspIT = -1;
+    int nodeIT = -1;
+    struct LSP *lsp;
+    
+    char name[32];
+    bzero(name, sizeof(name));
+    char nodeName[32];
+    bzero(nodeName, sizeof(nodeName));
+    
+    int ttl = 0;
+    int seqNum = 0;
+    int cost = 0;
+    int srcPort = 0;
+    int dstPort = 0;
+    
+    int i = 0;
+    int eof = 0;
+        
+    do {
+        eof++;
+        bzero(tmp, sizeof(tmp));
+        tmp[0] = buff[*it];
+        (*it)++;
+        if(tmp[0] == '['){ //Start of LSP
+            lspIT = 0;
+            i = 0;
+        } else if (tmp[0] == ']'){
+            i = 0;
+            return lsp;
+        } else if (tmp[0] == '<'){
+            node = 1;
+            nodeIT = 0;
+            i = 0;
+        } else if (tmp[0] == '>'){
+            node = 0;
+            i = 0;
+            if(addNeighbor(lsp, cost, nodeName, strlen(nodeName), srcPort, dstPort) < 0){
+                releaseLSP(lsp);
+                return NULL;
+            }
+            bzero(nodeName, sizeof(nodeName));
+            cost = 0;
+            dstPort = 0;
+            srcPort = 0;
+            nodeIT = 0;
+        } else if (tmp[0] == ',' && node != 1){ //LSP main part
+            if(lspIT == 3){
+                lsp = createLSP(name, strlen(name), ttl, seqNum);
+                bzero(name, sizeof(name));
+                ttl = 0;
+                seqNum = 0;
+            }
+            lspIT++;
+            i = 0;
+        } else if (tmp[0] == ',' && node == 1){ //Inside node
+            i = 0;
+            nodeIT++;
+        } else if (isalpha(tmp[0]) && lspIT == 0){
+            name[i] = tmp[0];
+            i++;
+        } else if (isdigit(tmp[0]) && lspIT == 1){
+            seqNum *= 10;
+            seqNum += tmp[0] - 48;
+        } else if (isdigit(tmp[0]) && lspIT == 2){
+            ttl *= 10;
+            ttl += tmp[0] - 48;
+        } else if (isalpha(tmp[0]) && node == 1 && nodeIT == 0){ //node name
+            nodeName[i] = tmp[0];
+            i++;
+        } else if (isdigit(tmp[0]) && node == 1 && nodeIT == 1){ //node cost
+            cost *= 10;
+            cost += tmp[0] - 48;
+        } else if (isdigit(tmp[0]) && node == 1 && nodeIT == 2){
+            srcPort *= 10;
+            srcPort += tmp[0] - 48;
+        } else if (isdigit(tmp[0]) && node == 1 && nodeIT == 3){
+            dstPort *= 10;
+            dstPort += tmp[0] - 48;
+        } else if (tmp[0] == '*') {
+            *die = 1;
+            return NULL;
+        }
+    } while (tmp[0] != 0 && eof <= buffSize);
+    releaseLSP(lsp);
+    return NULL;
+}
+

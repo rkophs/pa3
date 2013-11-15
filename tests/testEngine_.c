@@ -1,5 +1,5 @@
 
-#include "../dependencies/shared_.h"
+#include "../dependencies/engine_.h"
 
 int main(int argc, char** argv) {
 
@@ -95,17 +95,6 @@ int main(int argc, char** argv) {
     addNeighbor(n0, 2, "Y", 1, 9718, 9712);
     addNeighbor(n0, 1, "Z", 1, 9716, 9715);
     engineProcessLSP(engine, n0);
-
-    struct Connection *c = engineNextNeighbor(engine);
-    if (c != NULL) printf("C1: %i %i\n", c->srcPort, c->destPort);
-    c = engineNextNeighbor(engine);
-    if (c != NULL) printf("C2: %i %i\n", c->srcPort, c->destPort);
-    c = engineNextNeighbor(engine);
-    if (c != NULL) printf("C3: %i %i\n", c->srcPort, c->destPort);
-    c = engineNextNeighbor(engine);
-    if (c != NULL) printf("C4: %i %i\n", c->srcPort, c->destPort);
-    c = engineNextNeighbor(engine);
-    if (c != NULL) printf("C5: %i %i\n", c->srcPort, c->destPort);
     
     releaseEngine(engine);
     engine = NULL;

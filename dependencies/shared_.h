@@ -1,5 +1,5 @@
 #include <stdarg.h>
-#include "engine_.h"
+#include "network_.h"
 
 void insertNum(char * buffer, int buffSize, int num, int leastSignificantPos){
     if(num == 0){
@@ -71,7 +71,7 @@ int BuffAllNodes(struct Node *target, char *buff, int size){
     while(it != NULL){
         char temp[size];
         bzero(temp, size);
-        int ultSize = BUFF(temp, size, "< ID: %s , Cost: %i , SrcPort: %i , DestPort: %i >", 
+        int ultSize = BUFF(temp, size, "<%s,%i,%i,%i>", 
                 it->name, it->cost, it->srcPort, it->destPort);
         strncat(buff, temp, ultSize);
         it = it->next;
@@ -93,7 +93,7 @@ int BuffLSP(struct LSP *lsp, char *buff, int size) {
     if(lsp->neighborCount > 0){
         BuffAllNodes(lsp->neighbors, nodes, nStrS);
     }
-    BUFF(buff, size, "[%s , %i , %i , %i , {%s}]", lsp->sourceName, lsp->seqNum, 
+    BUFF(buff, size, "[%s,%i,%i,%i,{%s}]", lsp->sourceName, lsp->seqNum, 
             lsp->timeToLive, lsp->neighborCount, nodes);
     buff[size - 1] = 0;
     return 0;
