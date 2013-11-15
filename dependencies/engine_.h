@@ -208,7 +208,6 @@ int engineRecv(struct Engine *engine) {
 
 int engineRun(struct Engine *engine) {
     int t = time(0);
-    int it;
     while (1) {
         if (engineConditionalDie(engine) == 0) {
             return 0;
