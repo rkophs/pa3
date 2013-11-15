@@ -19,7 +19,7 @@ struct ARGS *initArgs(int argc, char **argv){
     }
     
     if(argc == 5){
-        tmp->destroyTime = argv[4];
+        tmp->destroyTime = atoi(argv[4]);
     } else {
         tmp->destroyTime = -1;
     }
