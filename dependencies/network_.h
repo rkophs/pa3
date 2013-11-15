@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 struct Connection {
     int srcPort;
@@ -40,6 +41,8 @@ int bindListener(struct Connection *connection) {
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         return -1;
     }
+    
+    //fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
     int val = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof (val)) < 0) {
@@ -65,6 +68,8 @@ int bindConnector(struct Connection *connection) {
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         return -1;
     }
+    
+    //fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
     int val = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof (val)) < 0) {

@@ -7,6 +7,7 @@ struct Engine {
     struct RoutePool* routes;
     struct ARGS *args;
     struct Sockets *socks;
+    int startTime;
     int it;
 };
 
@@ -43,6 +44,7 @@ struct Engine *initEngine(struct LSP* router, struct ARGS *args) {
     tmp->it = 0;
     tmp->args = args;
     tmp->socks = NULL;
+    tmp->startTime = time(0);
 
     return tmp;
 }
@@ -58,12 +60,12 @@ struct Engine *startEngine(int argc, char **argv) {
     /* Instantiate Router LSP and a copy:*/
     struct LSP *routerLSP;
     struct LSP *nLSP;
-    if ((routerLSP = parseLSP(args)) == NULL) {
+    if ((routerLSP = parseInitFile(args)) == NULL) {
         printf("Error copying file information\n");
         free(args);
         return NULL;
     }
-    if ((nLSP = parseLSP(args)) == NULL) {
+    if ((nLSP = parseInitFile(args)) == NULL) {
         printf("Error copying file information\n");
         releaseLSP(routerLSP);
         free(args);
@@ -137,8 +139,9 @@ int engineSyncRouters(struct Engine *engine) {
             }
             engine->socks[it].dstPort = engine->connection->destPort;
             engine->socks[it].srcPort = engine->connection->srcPort;
-            engine->socks[it].lSock = i;
+            engine->socks[it].rSock = i;
             engine->socks[it].type = 0;
+            fcntl(i, F_SETFL, O_NONBLOCK);
             printf("Connected 1: %i\n", engine->socks[it].dstPort);
             it++;
         }
@@ -157,12 +160,65 @@ int engineSyncRouters(struct Engine *engine) {
                 //Error
                 return -1;
             }
+            fcntl(i, F_SETFL, O_NONBLOCK);
             printf("Connected 2: %i\n", engine->socks[it].dstPort);
             engine->socks[it].rSock = i;
         }
     }
 
     return 0;
+}
+
+int engineConditionalDie(struct Engine *engine) {
+    int t = time(0);
+    if (engine->args->destroyTime != -1
+            && (t - engine->startTime >= engine->args->destroyTime)) {
+        int it;
+        for (it = 0; it < engine->router->neighborCount; it++) {
+            char buff[4];
+            bzero(buff, 4);
+            strcpy(buff, "DIE");
+            send(engine->socks[it].rSock, &buff, 4, 0);
+        }
+        return 0;
+    }
+    return -1;
+}
+
+void engineConditionalSendLSP(struct Engine *engine, int *t) {
+    if (*t + 5 < time(0)) {
+        *t = time(0);
+        //Send LSP
+        printf("Should send LSP\n");
+    }
+}
+
+int engineRecv(struct Engine *engine) {
+    int it;
+    for (it = 0; it < engine->router->neighborCount; it++) {
+        char buff[1024];
+        bzero(buff, 1024);
+        if (recv(engine->socks[it].rSock, buff, 1024, 0) > 0) {
+            printf("read: %s\n", buff);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int engineRun(struct Engine *engine) {
+    int t = time(0);
+    int it;
+    while (1) {
+        if (engineConditionalDie(engine) == 0) {
+            return 0;
+        }
+        engineConditionalSendLSP(engine, &t);
+        
+        if(engineRecv(engine) == 0){
+            return 0;
+        }
+    }
 }
 
 int engineProcessLSP(struct Engine *engine, struct LSP *lsp) {
