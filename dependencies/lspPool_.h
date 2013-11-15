@@ -11,6 +11,7 @@ struct lspPool *createLSPPool(){
         return NULL; //Not enough memory
     }
     tmp->lsps = NULL;
+    tmp->count = 0;
     return tmp;
 }
 

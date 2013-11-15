@@ -1,4 +1,4 @@
-#include "network_.h"
+#include "shared_.h"
 
 struct Engine {
     struct Connection* connection;
@@ -85,20 +85,19 @@ struct Engine *startEngine(int argc, char **argv) {
     return engine;
 }
 
-struct Connection *engineNextNeighbor(struct Engine *engine) {
+void engineNextNeighbor(struct Engine *engine) {
     struct Node *tmp;
     tmp = NULL;
     if ((tmp = getNeighborByIt(engine->router, engine->it)) == NULL) {
         engine->it = 0;
         engine->connection->srcPort = -1;
         engine->connection->destPort = -1;
-        return NULL;
+        return;
     }
     engine->it++;
     engine->connection->srcPort = tmp->srcPort;
     engine->connection->destPort = tmp->destPort;
 
-    return engine->connection;
 }
 
 int engineSyncRouters(struct Engine *engine) {
@@ -128,7 +127,7 @@ int engineSyncRouters(struct Engine *engine) {
     }
 
     //Now sleep and establish connectors:
-    sleep(20);
+    sleep(10);
     engineNextNeighbor(engine);
     while (engine->connection->srcPort > 0 && engine->connection->destPort > 0) {
         if (engine->connection->srcPort < engine->connection->destPort) { //Connect
@@ -166,58 +165,8 @@ int engineSyncRouters(struct Engine *engine) {
         }
     }
 
+    printf("End of sync\n");
     return 0;
-}
-
-int engineConditionalDie(struct Engine *engine) {
-    int t = time(0);
-    if (engine->args->destroyTime != -1
-            && (t - engine->startTime >= engine->args->destroyTime)) {
-        int it;
-        for (it = 0; it < engine->router->neighborCount; it++) {
-            char buff[4];
-            bzero(buff, 4);
-            strcpy(buff, "DIE");
-            send(engine->socks[it].rSock, &buff, 4, 0);
-        }
-        return 0;
-    }
-    return -1;
-}
-
-void engineConditionalSendLSP(struct Engine *engine, int *t) {
-    if (*t + 5 < time(0)) {
-        *t = time(0);
-        //Send LSP
-        printf("Should send LSP\n");
-    }
-}
-
-int engineRecv(struct Engine *engine) {
-    int it;
-    for (it = 0; it < engine->router->neighborCount; it++) {
-        char buff[1024];
-        bzero(buff, 1024);
-        if (recv(engine->socks[it].rSock, buff, 1024, 0) > 0) {
-            printf("read: %s\n", buff);
-            return 0;
-        }
-    }
-    return 1;
-}
-
-int engineRun(struct Engine *engine) {
-    int t = time(0);
-    while (1) {
-        if (engineConditionalDie(engine) == 0) {
-            return 0;
-        }
-        engineConditionalSendLSP(engine, &t);
-        
-        if(engineRecv(engine) == 0){
-            return 0;
-        }
-    }
 }
 
 int engineProcessLSP(struct Engine *engine, struct LSP *lsp) {
@@ -231,9 +180,98 @@ int engineProcessLSP(struct Engine *engine, struct LSP *lsp) {
     if (i == 1 || i == 2 || i == 3) {
         //LSP was either added or updated or deleted:
         dijkstrasEngine(engine->routes, engine->lsps);
+        int buffSize = 2048;
+        char buff[buffSize];
+        bzero(buff, buffSize);
+        BuffRouteTable(engine->routes, buff, buffSize);
+        bzero(buff, buffSize);
+        BuffAllLSPs(engine->lsps, buff, buffSize);
     }
 
     return i;
+}
+
+void engineDie(struct Engine *engine) {
+    int it;
+    for (it = 0; it < engine->router->neighborCount; it++) {
+        char buff[4];
+        bzero(buff, 4);
+        strcpy(buff, "*");
+        send(engine->socks[it].rSock, &buff, 4, 0);
+    }
+}
+
+void engineSendLSP(struct Engine *engine) {
+    incSeqNum(engine->router);
+    int buffSize = 1024;
+    char buff[buffSize];
+    bzero(buff, buffSize);
+    BuffLSP(engine->router, buff, buffSize);
+    int it;
+    for (it = 0; it < engine->router->neighborCount; it++) {
+        send(engine->socks[it].rSock, &buff, strlen(buff), 0);
+    }
+}
+
+void engineForwardLSP(struct Engine* engine, struct LSP *lsp){
+    int buffSize = 1024;
+    char buff[buffSize];
+    bzero(buff, buffSize);
+    BuffLSP(lsp, buff, buffSize);
+    int it;
+    for (it = 0; it < engine->router->neighborCount; it++) {
+        send(engine->socks[it].rSock, &buff, strlen(buff), 0);
+    }
+}
+
+int engineRecv(struct Engine *engine) {
+    int it;
+    for (it = 0; it < engine->router->neighborCount; it++) {
+        int buffSize = 2048;
+        char buff[buffSize];
+        bzero(buff, buffSize);
+        if (recv(engine->socks[it].rSock, buff, sizeof (buff), 0) > 0) {
+            int it2 = 0;
+            int die = 0;
+            struct LSP *lsp;
+            if ((lsp = parsePacket(buff, buffSize, &it2, &die)) != NULL) {
+                char tmp[1024];
+                bzero(tmp, 1024);
+                BuffLSP(lsp, tmp, 1024);
+                int i = engineProcessLSP(engine, lsp);
+                if(i == 1 || 1 == 2){
+                    engineForwardLSP(engine, lsp);
+                }
+                if(i == -1){
+                    return -1;
+                }
+            }
+            if (die) {
+                engineDie(engine);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int engineRun(struct Engine *engine) {
+    int t = time(0);
+    while (1) {
+        if (engine->args->destroyTime != -1
+                && (t - engine->startTime >= engine->args->destroyTime)) {
+            engineDie(engine);
+            //return 0;
+        }
+        if (t + 5 < time(0)) {
+            t = time(0);
+            engineSendLSP(engine);
+        }
+
+        if (engineRecv(engine) == 0) {
+            return 0;
+        }
+    }
 }
 
 int restartEngine(struct Engine *engine) {
