@@ -5,16 +5,23 @@ struct ARGS {
     char initFile[256];
     char logFile[256];
     char routerName[32];
+    int destroyTime;
 };
 
 struct ARGS *initArgs(int argc, char **argv){
-    if(argc != 4){
+    if(argc < 4){
         return NULL;
     }
     
     struct ARGS *tmp;
     if((tmp = (struct ARGS *) malloc(sizeof(struct ARGS))) == NULL){
         return NULL;
+    }
+    
+    if(argc == 5){
+        tmp->destroyTime = argv[4];
+    } else {
+        tmp->destroyTime = -1;
     }
     
     int rLen = strlen(argv[1]);
@@ -39,7 +46,7 @@ struct ARGS *initArgs(int argc, char **argv){
     return tmp;
 }
 
-struct LSP *parseLSP(struct ARGS *args){
+struct LSP *parseInitFile(struct ARGS *args){
     int it, i;
     
     char name[32];

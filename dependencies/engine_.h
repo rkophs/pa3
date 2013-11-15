@@ -58,12 +58,12 @@ struct Engine *startEngine(int argc, char **argv) {
     /* Instantiate Router LSP and a copy:*/
     struct LSP *routerLSP;
     struct LSP *nLSP;
-    if ((routerLSP = parseLSP(args)) == NULL) {
+    if ((routerLSP = parseInitFile(args)) == NULL) {
         printf("Error copying file information\n");
         free(args);
         return NULL;
     }
-    if ((nLSP = parseLSP(args)) == NULL) {
+    if ((nLSP = parseInitFile(args)) == NULL) {
         printf("Error copying file information\n");
         releaseLSP(routerLSP);
         free(args);
@@ -137,7 +137,7 @@ int engineSyncRouters(struct Engine *engine) {
             }
             engine->socks[it].dstPort = engine->connection->destPort;
             engine->socks[it].srcPort = engine->connection->srcPort;
-            engine->socks[it].lSock = i;
+            engine->socks[it].rSock = i;
             engine->socks[it].type = 0;
             printf("Connected 1: %i\n", engine->socks[it].dstPort);
             it++;
@@ -163,6 +163,41 @@ int engineSyncRouters(struct Engine *engine) {
     }
 
     return 0;
+}
+
+int engineRun(struct Engine *engine){
+    int it;
+    for(it = 0; it < engine->router->neighborCount; it++){
+        char buff[1024];
+        bzero(buff, 1024);
+        strcpy(buff, "TEST");
+        send(engine->socks[it].rSock, &buff, 4, 0);
+        printf("Test sent %i\n", it);
+        bzero(buff, 1024);
+        recv(engine->socks[it].rSock, buff, 1024, 0 );
+        printf("read: %s\n", buff);
+        bzero(buff, 1024);
+        strcpy(buff, "THIS AGAIN");
+        send(engine->socks[it].rSock, &buff, 10, 0);
+        printf("Test sent again %i\n", it);
+        bzero(buff, 1024);
+        recv(engine->socks[it].rSock, buff, 1024, 0 );
+        printf("read again: %s\n", buff);
+    }
+    
+    for(it = 0; it < engine->router->neighborCount; it++){
+        char buff[1024];
+        bzero(buff, 1024);
+        recv(engine->socks[it].rSock, buff, 1024, 0 );
+        printf("read again2: %s\n", buff);
+    }
+    
+    for(it = 0; it < engine->router->neighborCount; it++){
+        char buff[1024];
+        bzero(buff, 1024);
+        recv(engine->socks[it].rSock, buff, 1024, 0 );
+        printf("read again3: %s\n", buff);
+    }
 }
 
 int engineProcessLSP(struct Engine *engine, struct LSP *lsp) {

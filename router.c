@@ -11,6 +11,8 @@ int main(int argc, char **argv) {
         releaseEngine(engine);
         return -1;
     }
+    
+    engineRun(engine);
 
     releaseEngine(engine);
     return 0;
