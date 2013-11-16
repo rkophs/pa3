@@ -99,6 +99,19 @@ int BuffLSP(struct LSP *lsp, char *buff, int size) {
     return 0;
 }
 
+int LogLSP(struct LSP *lsp, FILE *file){
+    if (lsp == NULL) { //Must be valid LSP
+        return -1;
+    }
+    
+    LOG(file, "[%s , %i , %i , %i , {", lsp->sourceName, lsp->seqNum, 
+            lsp->timeToLive, lsp->neighborCount);
+    LogAllNodes(lsp->neighbors, file);
+    LOG(file, "%s}]");
+    
+    return 0;
+}
+
 int BuffAllLSPs(struct lspPool *pool, char *buff, int size){
     struct LSP *target = pool->lsps;
     bzero(buff, size);
@@ -144,7 +157,6 @@ int LogRouteTable(struct RoutePool *pool, FILE *file){
         return -1;
     }
     
-    struct Route *it = pool->route;
     LOG(file, "----------------Routing Table--------------\n");
     int i;
     for(i = 0; i < pool->count; i++){
@@ -154,20 +166,6 @@ int LogRouteTable(struct RoutePool *pool, FILE *file){
         LOG(file, "\n");
     }
     LOG(file, "---------End of Routing Table--------------\n");
-}
-
-
-int LogLSP(struct LSP *lsp, FILE *file){
-    if (lsp == NULL) { //Must be valid LSP
-        return -1;
-    }
-    
-    LOG(file, "[%s , %i , %i , %i , {", lsp->sourceName, lsp->seqNum, 
-            lsp->timeToLive, lsp->neighborCount);
-    LogAllNodes(lsp->neighbors, file);
-    LOG(file, "%s}]");
-    
-    return 0;
 }
 
 int LogAllLSPs(struct LSP* target, FILE *file){

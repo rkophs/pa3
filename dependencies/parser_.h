@@ -6,6 +6,7 @@ struct ARGS {
     char logFile[256];
     char routerName[32];
     int destroyTime;
+    FILE *file;
 };
 
 struct ARGS *initArgs(int argc, char **argv){
@@ -42,6 +43,13 @@ struct ARGS *initArgs(int argc, char **argv){
     strncpy(tmp->initFile, argv[3], iLen);
     strncpy(tmp->logFile, argv[2], lLen);
     strncpy(tmp->routerName, argv[1], rLen);
+    
+    
+    if(!(tmp->file = fopen(argv[2], "wb"))){
+        printf("Error opening log file\n");
+        free(tmp);
+        return NULL;
+    }
     
     return tmp;
 }

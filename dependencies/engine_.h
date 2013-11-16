@@ -53,7 +53,6 @@ struct Engine *startEngine(int argc, char **argv) {
     /* Parse and save arguments */
     struct ARGS *args;
     if ((args = initArgs(argc, argv)) == NULL) {
-        printf("Error parsing arguments\n");
         return NULL;
     }
 
@@ -61,12 +60,10 @@ struct Engine *startEngine(int argc, char **argv) {
     struct LSP *routerLSP;
     struct LSP *nLSP;
     if ((routerLSP = parseInitFile(args)) == NULL) {
-        printf("Error copying file information\n");
         free(args);
         return NULL;
     }
     if ((nLSP = parseInitFile(args)) == NULL) {
-        printf("Error copying file information\n");
         releaseLSP(routerLSP);
         free(args);
         return NULL;
@@ -103,18 +100,15 @@ void engineNextNeighbor(struct Engine *engine) {
 int engineSyncRouters(struct Engine *engine) {
     if ((engine->socks = initSocksPool(engine->router->neighborCount)) == NULL) {
         return -1;
-        printf("issue\n");
     }
 
     //Bind listeners first
     int it = 0;
     engineNextNeighbor(engine);
     while (engine->connection->srcPort > 0 && engine->connection->destPort > 0) {
-        printf("%i %i\n", engine->connection->srcPort, engine->connection->destPort);
         if (engine->connection->srcPort > engine->connection->destPort) { //Listen
             int i;
             if ((i = bindListener(engine->connection)) < 0) {
-                printf("error binding listener");
                 return -1;
             }
             engine->socks[it].dstPort = engine->connection->destPort;
@@ -141,7 +135,7 @@ int engineSyncRouters(struct Engine *engine) {
             engine->socks[it].rSock = i;
             engine->socks[it].type = 0;
             fcntl(i, F_SETFL, O_NONBLOCK);
-            printf("Connected 1: %i\n", engine->socks[it].dstPort);
+            printf("port %i is connected to port %i\n", engine->socks[it].srcPort, engine->socks[it].dstPort);
             it++;
         }
         engineNextNeighbor(engine);
@@ -159,13 +153,12 @@ int engineSyncRouters(struct Engine *engine) {
                 //Error
                 return -1;
             }
+            printf("port %i is connected to port %i\n", engine->socks[it].srcPort, engine->socks[it].dstPort);
             fcntl(i, F_SETFL, O_NONBLOCK);
-            printf("Connected 2: %i\n", engine->socks[it].dstPort);
             engine->socks[it].rSock = i;
         }
     }
 
-    printf("End of sync\n");
     return 0;
 }
 
@@ -183,9 +176,11 @@ int engineProcessLSP(struct Engine *engine, struct LSP *lsp) {
         int buffSize = 2048;
         char buff[buffSize];
         bzero(buff, buffSize);
-        BuffRouteTable(engine->routes, buff, buffSize);
+        BuffLSP(lsp, buff, buffSize);
+        LOG(engine->args->file, "Newest LSP: <%i> %s\n", time(0), buff);
         bzero(buff, buffSize);
-        BuffAllLSPs(engine->lsps, buff, buffSize);
+        BuffRouteTable(engine->routes, buff, buffSize);
+        LOG(engine->args->file, "Resulting route table: %s\n",  buff);
     }
 
     return i;
@@ -248,6 +243,7 @@ int engineRecv(struct Engine *engine) {
             }
             if (die) {
                 engineDie(engine);
+                sleep(1);
                 return 0;
             }
         }
@@ -281,6 +277,7 @@ int restartEngine(struct Engine *engine) {
 }
 
 void releaseEngine(struct Engine *engine) {
+    fclose(engine->args->file);
     releaseLSPPool(engine->lsps); //Also releases the routerLSP!!!
     releaseRoutePool(engine->routes);
     releaseLSP(engine->router);

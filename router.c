@@ -12,14 +12,8 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    printf("Starting the run\n");
     engineRun(engine);
-    
-    int buffSize = 2048;
-    char buff[buffSize];
-    bzero(buff, buffSize);
-    BuffRouteTable(engine->routes, buff, buffSize);
-    printf("Table: %s\n", buff);
+    printf("Router: %s is closing...\n", engine->args->routerName);
 
     releaseEngine(engine);
     return 0;
